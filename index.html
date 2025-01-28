@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGPA Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .grade-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .grade-table th, .grade-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .grade-table th {
+            background-color: #f0f0f0;
+        }
+
+        .calculator {
+            margin-top: 20px;
+        }
+
+        .semester {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .subject-row {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .results div {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CGPA Calculator</h1>
+
+        <!-- Grade Scale Table -->
+        <table class="grade-table">
+            <caption>Grade Points Scale</caption>
+            <thead>
+                <tr>
+                    <th>Grade (GR)</th>
+                    <th>Points (GP)</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>O</td>
+                    <td>10</td>
+                    <td>Outstanding</td>
+                </tr>
+                <tr>
+                    <td>A+</td>
+                    <td>9</td>
+                    <td>Excellent</td>
+                </tr>
+                <tr>
+                    <td>A</td>
+                    <td>8</td>
+                    <td>Very Good</td>
+                </tr>
+                <tr>
+                    <td>B+</td>
+                    <td>7</td>
+                    <td>Good</td>
+                </tr>
+                <tr>
+                    <td>B</td>
+                    <td>6</td>
+                    <td>Above Average</td>
+                </tr>
+                <tr>
+                    <td>C</td>
+                    <td>5</td>
+                    <td>Average</td>
+                </tr>
+                <tr>
+                    <td>P</td>
+                    <td>4</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>F</td>
+                    <td>0</td>
+                    <td>Fail</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Calculator Section -->
+        <div class="calculator">
+            <div id="semesters"></div>
+            <button onclick="addSemester()">Add Semester</button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results">
+            <div>CGPA: <span id="cgpa">0.00</span></div>
+            <div>Percentage: <span id="percentage">0.00</span>%</div>
+            <div>Total Credits: <span id="totalCredits">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        const gradePoints = {
+            'O': 10,
+            'A+': 9,
+            'A': 8,
+            'B+': 7,
+            'B': 6,
+            'C': 5,
+            'P': 4,
+            'F': 0
+        };
+
+        let semesterCount = 0;
+
+        function addSemester() {
+            semesterCount++;
+            const semestersDiv = document.getElementById('semesters');
+            const semesterDiv = document.createElement('div');
+            semesterDiv.className = 'semester';
+            semesterDiv.innerHTML = `
+                <h3>Semester ${semesterCount}</h3>
+                <div class="subject-row">
+                    <div>Subject</div>
+                    <div>Credits</div>
+                    <div>Grade</div>
+                    <div>Points</div>
+                </div>
+                <div class="subjects"></div>
+                <button onclick="addSubject(${semesterCount})">Add Subject</button>
+                <div>SGPA: <span id="sgpa-${semesterCount}">0.00</span></div>
+            `;
+            semestersDiv.appendChild(semesterDiv);
+            addSubject(semesterCount);
+        }
+
+        function addSubject(semesterNum) {
+            const subjectsDiv = document.querySelector(`#semesters .semester:nth-child(${semesterNum}) .subjects`);
+            const subjectDiv = document.createElement('div');
+            subjectDiv.className = 'subject-row';
+            subjectDiv.innerHTML = `
+                <input type="text" placeholder="Subject Name" onchange="calculateSGPA(${semesterNum})">
+                <input type="number" value="3" min="1" max="4" onchange="calculateSGPA(${semesterNum})">
+                <select onchange="calculateSGPA(${semesterNum})">
+                    ${Object.entries(gradePoints).map(([grade, points]) => 
+                        `<option value="${grade}">${grade} (${points})</option>`
+                    ).join('')}
+                </select>
+                <div class="points">0</div>
+            `;
+            subjectsDiv.appendChild(subjectDiv);
+        }
+
+        function calculateSGPA(semesterNum) {
+            const semester = document.querySelector(`#semesters .semester:nth-child(${semesterNum})`);
+            const subjects = semester.querySelectorAll('.subject-row:not(:first-child)');
+            let totalCredits = 0;
+            let totalPoints = 0;
+
+            subjects.forEach(subject => {
+                const credits = parseInt(subject.querySelector('input[type="number"]').value);
+                const grade = subject.querySelector('select').value;
+                const points = credits * gradePoints[grade];
+                subject.querySelector('.points').textContent = points;
+                totalCredits += credits;
+                totalPoints += points;
+            });
+
+            const sgpa = totalPoints / totalCredits;
+            semester.querySelector(`#sgpa-${semesterNum}`).textContent = sgpa.toFixed(2);
+            calculateCGPA();
+        }
+
+        function calculateCGPA() {
+            let totalCredits = 0;
+            let totalPoints = 0;
+
+            document.querySelectorAll('.semester').forEach(semester => {
+                const subjects = semester.querySelectorAll('.subject-row:not(:first-child)');
+                subjects.forEach(subject => {
+                    const credits = parseInt(subject.querySelector('input[type="number"]').value);
+                    const grade = subject.querySelector('select').value;
+                    totalCredits += credits;
+                    totalPoints += credits * gradePoints[grade];
+                });
+            });
+
+            const cgpa = totalPoints / totalCredits;
+            document.getElementById('cgpa').textContent = cgpa.toFixed(2);
+            document.getElementById('percentage').textContent = ((cgpa - 0.75) * 10).toFixed(2);
+            document.getElementById('totalCredits').textContent = totalCredits;
+        }
+
+        // Add first semester automatically
+        addSemester();
+    </script>
+</body>
+</html>
